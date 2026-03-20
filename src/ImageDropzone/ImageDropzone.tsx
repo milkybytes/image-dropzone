@@ -1,14 +1,20 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { buildDropzoneThemeVars, ImageDropzoneTheme } from '../theme';
-import ChevronDownIcon from '../icons/ChevronDownIcon';
-import ChevronLeftIcon from '../icons/ChevronLeftIcon';
-import ChevronRightIcon from '../icons/ChevronRightIcon';
-import ChevronUpIcon from '../icons/ChevronUpIcon';
 import DeleteIcon from '../icons/DeleteIcon';
-import DownloadIcon from '../icons/DownloadIcon';
 import ImageUploadIcon from '../icons/ImageUploadIcon';
 import styles from './ImageDropzone.module.css';
+
+export interface ActionContext {
+  /** Whether an image is currently loaded */
+  hasSrc: boolean;
+  /** Opens the native file picker */
+  triggerUpload: () => void;
+  /** Clears the current image */
+  clearImage: () => void;
+  /** Captures the currently-visible area and returns it as a PNG data URL */
+  captureVisibleArea: () => string | undefined;
+}
 
 export interface ImageDropzoneProps {
   /** Placeholder label shown when no image is loaded */
@@ -27,25 +33,12 @@ export interface ImageDropzoneProps {
   /** Called with a base64 data URL when an image is uploaded, or null when deleted */
   onImageUpload?: (image: string | null) => void;
   /**
-   * Called when the user clicks the download icon.
-   * When `captureVisible` is true, receives the data URL of only the visible area.
-   * Otherwise receives `undefined` — use the original `imageSrc` for a full download.
+   * Render prop for the action toolbar. Receives an ActionContext with helpers
+   * (triggerUpload, clearImage, captureVisibleArea, hasSrc) so you can compose
+   * any layout of icons you need. Defaults to an upload + delete icon when omitted.
    */
-  onImageDownload?: (visibleDataUrl?: string) => void;
-  /**
-   * When true, the download action captures only the currently-visible cropped area
-   * and passes its PNG data URL to `onImageDownload`.
-   */
-  captureVisible?: boolean;
-  /** If provided, shows a left-arrow action button */
-  onMoveLeft?: (() => void) | null;
-  /** If provided, shows a right-arrow action button */
-  onMoveRight?: (() => void) | null;
-  /** If provided, shows an up-arrow action button */
-  onMoveUp?: (() => void) | null;
-  /** If provided, shows a down-arrow action button */
-  onMoveDown?: (() => void) | null;
-  /** When true, hides upload/delete/move controls and disables drag */
+  actions?: (ctx: ActionContext) => React.ReactNode;
+  /** When true, hides the action toolbar and disables drag/drop */
   readOnly?: boolean;
   /**
    * Theme token overrides. Any CSS `--idz-*` variable can still be set globally
@@ -66,13 +59,8 @@ const ImageDropzone = React.memo(
     height,
     imageSrc,
     onImageTransform = () => {},
-    onImageUpload,
-    onImageDownload,
-    captureVisible = false,
-    onMoveLeft = null,
-    onMoveRight = null,
-    onMoveUp = null,
-    onMoveDown = null,
+    onImageUpload = () => {},
+    actions,
     readOnly = false,
     theme,
     className,
@@ -279,25 +267,21 @@ const ImageDropzone = React.memo(
       }
     };
 
-    const handleDownload = () => {
-      if (!onImageDownload) return;
-      if (captureVisible && imageRef.current && containerSize.width && containerSize.height) {
-        const canvas = document.createElement('canvas');
-        canvas.width = containerSize.width;
-        canvas.height = containerSize.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { onImageDownload(); return; }
-        ctx.drawImage(
-          imageRef.current,
-          position.x,
-          position.y,
-          imageRef.current.naturalWidth * scale,
-          imageRef.current.naturalHeight * scale,
-        );
-        onImageDownload(canvas.toDataURL('image/png'));
-      } else {
-        onImageDownload();
-      }
+    const captureVisibleArea = (): string | undefined => {
+      if (!imageRef.current || !containerSize.width || !containerSize.height) return undefined;
+      const canvas = document.createElement('canvas');
+      canvas.width = containerSize.width;
+      canvas.height = containerSize.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return undefined;
+      ctx.drawImage(
+        imageRef.current,
+        position.x,
+        position.y,
+        imageRef.current.naturalWidth * scale,
+        imageRef.current.naturalHeight * scale,
+      );
+      return canvas.toDataURL('image/png');
     };
 
     return (
@@ -355,13 +339,20 @@ const ImageDropzone = React.memo(
           {!readOnly && (
             <>
               <div className={`${styles.actions} ${isHovered ? styles['fade-in'] : ''}`}>
-                <ImageUploadIcon onClick={() => inputRef.current?.click()} />
-                {onMoveLeft && <ChevronLeftIcon disabled={!displaySrc} onClick={onMoveLeft} />}
-                {onMoveUp && <ChevronUpIcon disabled={!displaySrc} onClick={onMoveUp} />}
-                {onMoveRight && <ChevronRightIcon disabled={!displaySrc} onClick={onMoveRight} />}
-                {onMoveDown && <ChevronDownIcon disabled={!displaySrc} onClick={onMoveDown} />}
-                {onImageDownload && <DownloadIcon onClick={handleDownload} />}
-                <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
+                {actions
+                  ? actions({
+                      hasSrc: !!displaySrc,
+                      triggerUpload: () => inputRef.current?.click(),
+                      clearImage: () => onImageUpload?.(null),
+                      captureVisibleArea,
+                    })
+                  : (
+                      <>
+                        <ImageUploadIcon onClick={() => inputRef.current?.click()} />
+                        <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
+                      </>
+                    )
+                }
               </div>
               <input
                 type="file"
@@ -377,7 +368,5 @@ const ImageDropzone = React.memo(
     );
   },
 );
-
-ImageDropzone.displayName = 'ImageDropzone';
 
 export default ImageDropzone;

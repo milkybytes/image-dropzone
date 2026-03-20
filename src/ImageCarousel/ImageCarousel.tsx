@@ -1,9 +1,12 @@
 import React from 'react';
 
 import { buildCarouselThemeVars, ImageCarouselTheme } from '../theme';
-import ImageDropzone from '../ImageDropzone/ImageDropzone';
+import ImageDropzone, { type ActionContext } from '../ImageDropzone/ImageDropzone';
 import ChevronLeftIcon from '../icons/ChevronLeftIcon';
 import ChevronRightIcon from '../icons/ChevronRightIcon';
+import DeleteIcon from '../icons/DeleteIcon';
+import DownloadIcon from '../icons/DownloadIcon';
+import ImageUploadIcon from '../icons/ImageUploadIcon';
 import styles from './ImageCarousel.module.css';
 
 export interface CarouselSlot {
@@ -24,9 +27,9 @@ export interface ImageCarouselProps {
   /** Called when the user uploads or clears an image in a slot */
   onImageUpload: (slotIndex: number, image: string | null) => void;
   /** Called when the user clicks download on a slot */
-  onImageDownload: (slotIndex: number) => void;
+  onImageDownload?: (slotIndex: number) => void;
   /** Called when the user pans/zooms an image in a slot */
-  onImageTransform: (slotIndex: number, position: { x: number; y: number }, scale: number) => void;
+  onImageTransform?: (slotIndex: number, position: { x: number; y: number }, scale: number) => void;
   /** Called when the user navigates to a different slot */
   onIndexChange: (newIndex: number) => void;
   /**
@@ -34,6 +37,11 @@ export interface ImageCarouselProps {
    * so the user can reorder images between adjacent slots.
    */
   onCarouselImageMove?: (fromIndex: number, toIndex: number) => void;
+  /**
+   * Render prop for the action toolbar of each slot. Receives standard ActionContext
+   * plus the current `slotIndex`. Overrides the default upload/move/download/delete toolbar.
+   */
+  actions?: (ctx: ActionContext & { slotIndex: number }) => React.ReactNode;
   /**
    * Theme token overrides. Covers both the inner dropzone and the carousel
    * nav buttons/dots. Supports multiple themes without any global CSS.
@@ -45,17 +53,18 @@ export interface ImageCarouselProps {
   style?: React.CSSProperties;
 }
 
-const ImageCarousel = ({
+const ImageCarousel = React.memo(({
   width,
   height,
   slots,
   images,
   currentIndex,
-  onImageUpload,
-  onImageDownload,
-  onImageTransform,
-  onIndexChange,
-  onCarouselImageMove,
+  onImageUpload = () => {},
+  onImageDownload = () => {},
+  onImageTransform = () => {},
+  onIndexChange = () => {},
+  onCarouselImageMove = () => {},
+  actions,
   theme,
   className,
   style,
@@ -87,10 +96,23 @@ const ImageCarousel = ({
           height={height}
           imageSrc={images[currentIndex] ?? undefined}
           onImageUpload={(image) => onImageUpload(currentIndex, image)}
-          onImageDownload={() => onImageDownload(currentIndex)}
           onImageTransform={(position, scale) => onImageTransform(currentIndex, position, scale)}
-          onMoveLeft={canMoveLeft && onCarouselImageMove ? () => onCarouselImageMove(currentIndex, currentIndex - 1) : null}
-          onMoveRight={canMoveRight && onCarouselImageMove ? () => onCarouselImageMove(currentIndex, currentIndex + 1) : null}
+          actions={actions
+            ? (ctx) => actions({ ...ctx, slotIndex: currentIndex })
+            : (ctx) => (
+                <>
+                  <ImageUploadIcon onClick={ctx.triggerUpload} />
+                  {onCarouselImageMove && canMoveLeft && (
+                    <ChevronLeftIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex - 1)} />
+                  )}
+                  {onCarouselImageMove && canMoveRight && (
+                    <ChevronRightIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex + 1)} />
+                  )}
+                  {onImageDownload && <DownloadIcon onClick={() => onImageDownload(currentIndex)} />}
+                  <DeleteIcon disabled={!ctx.hasSrc} onClick={ctx.clearImage} />
+                </>
+              )
+          }
         />
 
         <div className={styles.carouselControls}>
@@ -117,6 +139,6 @@ const ImageCarousel = ({
       </div>
     </div>
   );
-};
+});
 
 export default ImageCarousel;
