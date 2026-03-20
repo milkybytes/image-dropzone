@@ -1,0 +1,86 @@
+/**
+ * ImageDropzone CSS variables (override on :root or a wrapper element):
+ *
+ * --idz-bg             Background color of the dropzone     (default: #1e1e2e)
+ * --idz-border         Border shorthand                      (default: none)
+ * --idz-border-hover   Border color when hovered             (default: #888)
+ * --idz-radius         Border radius                         (default: 8px)
+ * --idz-label-color    Empty-state label text color          (default: rgba(255,255,255,0.5))
+ * --idz-surface        Actions toolbar background color      (default: #2a2a3e)
+ * --idz-accent         Icon hover/active color               (default: #7c83d4)
+ * --idz-icon-color     Icon fill color (inherited from SVGIcon) (default: #ffffff)
+ */
+
+.dropzoneSizer {
+  width: var(--dropzone-width);
+  max-width: 100%;
+  container-type: inline-size;
+
+  > .dropzone {
+    border-radius: var(--idz-radius, 8px);
+  }
+}
+
+.dropzone {
+  position: relative;
+  background-color: var(--idz-bg, #1e1e2e);
+  border: var(--idz-border, none);
+  border-radius: var(--idz-radius, 8px);
+  transition: border-color 0.3s ease-in-out;
+  z-index: 10;
+  user-select: none;
+  overflow: clip;
+
+  &:hover {
+    border-color: var(--idz-border-hover, #888);
+  }
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: var(--idz-label-color, rgba(255, 255, 255, 0.5));
+  font-size: clamp(0.7rem, 6.3cqw, 1.4rem);
+  font-weight: 900;
+  gap: 4px;
+
+  svg {
+    width: clamp(16px, 6.9cqw, 24px);
+    height: clamp(16px, 6.9cqw, 24px);
+  }
+}
+
+.actions {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: center;
+  background-color: var(--idz-surface, #2a2a3e);
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0px 2px 2px,
+    rgba(0, 0, 0, 0.23) 0px 2px 2px;
+  padding: 2px 8px;
+  gap: 4px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  transition: opacity 0.3s ease-in-out;
+  opacity: 0;
+  white-space: nowrap;
+
+  &.fade-in {
+    opacity: 1;
+  }
+
+  > svg[data-disabled='false']:hover {
+    fill: var(--idz-accent, #7c83d4);
+    cursor: pointer;
+  }
+}

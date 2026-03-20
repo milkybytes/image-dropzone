@@ -1,0 +1,100 @@
+/**
+ * ImageCarousel CSS variables (override on :root or a wrapper element):
+ *
+ * --idz-carousel-btn-bg          Nav button background          (default: rgba(0,0,0,0.6))
+ * --idz-carousel-btn-border      Nav button border color        (default: rgba(255,255,255,0.2))
+ * --idz-carousel-btn-color       Nav button icon fill           (default: #ffffff)
+ * --idz-carousel-dot-bg          Inactive dot background        (default: rgba(255,255,255,0.4))
+ * --idz-carousel-dot-active-bg   Active dot background          (default: rgba(255,255,255,0.9))
+ */
+
+.carouselContainer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.carouselWrapper {
+  position: relative;
+}
+
+.carouselControls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.carouselButton {
+  pointer-events: all;
+  background: var(--idz-carousel-btn-bg, rgba(0, 0, 0, 0.6));
+  border: 1px solid var(--idz-carousel-btn-border, rgba(255, 255, 255, 0.2));
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--idz-carousel-btn-color, #ffffff);
+
+  svg {
+    fill: var(--idz-carousel-btn-color, #ffffff);
+  }
+}
+
+.carouselButton:hover {
+  background: rgba(0, 0, 0, 0.8);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.carouselButton:active {
+  transform: scale(0.95);
+}
+
+.carouselButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.carouselDots {
+  pointer-events: all;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.carouselDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--idz-carousel-dot-bg, rgba(255, 255, 255, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.carouselDot:hover {
+  background: rgba(255, 255, 255, 0.6);
+  transform: scale(1.2);
+}
+
+.carouselDot.active {
+  background: var(--idz-carousel-dot-active-bg, rgba(255, 255, 255, 0.9));
+  width: 12px;
+  height: 12px;
+  border-color: white;
+}
+
+

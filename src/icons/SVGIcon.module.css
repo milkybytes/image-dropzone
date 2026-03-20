@@ -1,0 +1,21 @@
+/**
+ * SVGIcon CSS variables (override on :root or a wrapper element):
+ *
+ * --idz-icon-color   Fill color for icons          (default: #ffffff)
+ * --idz-accent       Fill color for primary icons  (default: #7c83d4)
+ */
+.SVGIcon {
+  fill: var(--idz-icon-color, #ffffff);
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.SVGIcon[data-variant='primary'] {
+  fill: var(--idz-accent, #7c83d4);
+}
+
+.SVGIcon[data-disabled='true'] {
+  opacity: 0.5;
+}
