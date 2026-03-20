@@ -69,7 +69,7 @@ const ImageCarousel = React.memo(({
   className,
   style,
 }: ImageCarouselProps) => {
-  
+
   const handlePrevious = () => {
     onIndexChange(currentIndex === 0 ? slots.length - 1 : currentIndex - 1);
   };
@@ -102,7 +102,7 @@ const ImageCarousel = React.memo(({
             ? (ctx) => actions({ ...ctx, slotIndex: currentIndex })
             : (ctx) => (
                 <>
-                  <ImageUploadIcon onClick={ctx.triggerUpload} />
+                  <ImageUploadIcon onClick={ctx.openFilePicker} />
                   {onCarouselImageMove && canMoveLeft && (
                     <ChevronLeftIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex - 1)} />
                   )}
@@ -110,7 +110,7 @@ const ImageCarousel = React.memo(({
                     <ChevronRightIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex + 1)} />
                   )}
                   {onImageDownload && <DownloadIcon onClick={() => onImageDownload(currentIndex)} />}
-                  <DeleteIcon disabled={!ctx.hasSrc} onClick={ctx.clearImage} />
+                  <DeleteIcon disabled={!ctx.hasImage} onClick={ctx.removeImage} />
                 </>
               )
           }

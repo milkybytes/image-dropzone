@@ -7,13 +7,13 @@ import styles from './ImageDropzone.module.css';
 
 export interface ActionContext {
   /** Whether an image is currently loaded */
-  hasSrc: boolean;
+  hasImage: boolean;
   /** Opens the native file picker */
-  triggerUpload: () => void;
-  /** Clears the current image */
-  clearImage: () => void;
-  /** Captures the currently-visible area and returns it as a PNG data URL */
-  captureVisibleArea: () => string | undefined;
+  openFilePicker: () => void;
+  /** Removes the current image */
+  removeImage: () => void;
+  /** Exports the currently-visible cropped area as a PNG data URL */
+  exportCrop: () => string | undefined;
 }
 
 export interface ImageDropzoneProps {
@@ -34,7 +34,7 @@ export interface ImageDropzoneProps {
   onImageUpload?: (image: string | null) => void;
   /**
    * Render prop for the action toolbar. Receives an ActionContext with helpers
-   * (triggerUpload, clearImage, captureVisibleArea, hasSrc) so you can compose
+   * (openFilePicker, removeImage, exportCrop, hasImage) so you can compose
    * any layout of icons you need. Defaults to an upload + delete icon when omitted.
    */
   actions?: (ctx: ActionContext) => React.ReactNode;
@@ -335,10 +335,10 @@ const ImageDropzone = React.memo(
               <div className={`${styles.actions} ${isHovered ? styles['fade-in'] : ''}`}>
                 {actions
                   ? actions({
-                      hasSrc: !!displaySrc,
-                      triggerUpload: () => inputRef.current?.click(),
-                      clearImage: () => onImageUpload?.(null),
-                      captureVisibleArea,
+                      hasImage: !!displaySrc,
+                      openFilePicker: () => inputRef.current?.click(),
+                      removeImage: () => onImageUpload?.(null),
+                      exportCrop: captureVisibleArea,
                     })
                   : (
                       <>
