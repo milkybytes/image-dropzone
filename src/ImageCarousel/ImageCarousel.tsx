@@ -59,16 +59,17 @@ const ImageCarousel = React.memo(({
   slots,
   images,
   currentIndex,
-  onImageUpload = () => {},
-  onImageDownload = () => {},
+  onImageUpload,
+  onImageDownload,
   onImageTransform = () => {},
-  onIndexChange = () => {},
-  onCarouselImageMove = () => {},
+  onIndexChange,
+  onCarouselImageMove,
   actions,
   theme,
   className,
   style,
 }: ImageCarouselProps) => {
+  
   const handlePrevious = () => {
     onIndexChange(currentIndex === 0 ? slots.length - 1 : currentIndex - 1);
   };
@@ -140,5 +141,7 @@ const ImageCarousel = React.memo(({
     </div>
   );
 });
+
+ImageCarousel.displayName = 'ImageCarousel';
 
 export default ImageCarousel;

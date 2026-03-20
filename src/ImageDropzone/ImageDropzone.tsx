@@ -71,8 +71,8 @@ const ImageDropzone = React.memo(
     const imageRef = useRef<HTMLImageElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [cursorStyle, setCursorStyle] = useState('grab');
-    const dragStart = useRef({ x: 0, y: 0 });
-    const dragRef = useRef(false);
+    const dragOriginRef = useRef({ x: 0, y: 0 });
+    const isDraggingRef = useRef(false);
     const [isHovered, setIsHovered] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const [imageLoading, setImageLoading] = useState(!!imageSrc);
@@ -123,7 +123,7 @@ const ImageDropzone = React.memo(
       }
     }, [imageSrc, displaySrc]);
 
-    const onImageLoad = () => {
+    const handleImageLoad = () => {
       setImageLoading(false);
       if (imageRef.current) {
         setImageNaturalSize({
@@ -155,21 +155,21 @@ const ImageDropzone = React.memo(
     const handleMouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
       event.preventDefault();
       setCursorStyle('grabbing');
-      dragRef.current = true;
-      dragStart.current = {
+      isDraggingRef.current = true;
+      dragOriginRef.current = {
         x: event.clientX - position.x,
         y: event.clientY - position.y,
       };
     };
 
     const handleDragMove = (event: MouseEvent) => {
-      if (!dragRef.current) return;
+      if (!isDraggingRef.current) return;
       event.preventDefault();
-      updatePosition(event.clientX - dragStart.current.x, event.clientY - dragStart.current.y);
+      updatePosition(event.clientX - dragOriginRef.current.x, event.clientY - dragOriginRef.current.y);
     };
 
     const handleDragStop = () => {
-      dragRef.current = false;
+      isDraggingRef.current = false;
       setCursorStyle('grab');
     };
 
@@ -182,7 +182,7 @@ const ImageDropzone = React.memo(
         window.removeEventListener('mouseup', handleDragStop);
         window.removeEventListener('mouseleave', handleDragStop);
       };
-    }, [scale]);
+    }, []);
 
     // Stable wheel handler — reads latest scale/position from ref so pan-then-zoom works correctly
     useEffect(() => {
@@ -229,15 +229,16 @@ const ImageDropzone = React.memo(
     }, [readOnly]);
 
     const updatePosition = (newX: number, newY: number) => {
-      if (!imageRef.current || !containerSize.width || !containerSize.height) return;
-      const imgWidth = imageRef.current.naturalWidth * scale;
-      const imgHeight = imageRef.current.naturalHeight * scale;
+      const { scale: s, containerSize: cs } = latestRef.current;
+      if (!imageRef.current || !cs.width || !cs.height) return;
+      const imgWidth = imageRef.current.naturalWidth * s;
+      const imgHeight = imageRef.current.naturalHeight * s;
       updateTransform(
         {
-          x: Math.min(0, Math.max(newX, containerSize.width - imgWidth)),
-          y: Math.min(0, Math.max(newY, containerSize.height - imgHeight)),
+          x: Math.min(0, Math.max(newX, cs.width - imgWidth)),
+          y: Math.min(0, Math.max(newY, cs.height - imgHeight)),
         },
-        scale,
+        s,
       );
     };
 
@@ -288,7 +289,7 @@ const ImageDropzone = React.memo(
       <div
         className={`${styles.dropzoneSizer}${className ? ` ${className}` : ''}`}
         style={{
-          '--dropzone-width': `${width}px`,
+          '--idz-width': `${width}px`,
           ...(theme ? buildDropzoneThemeVars(theme) : {}),
           ...style,
         } as React.CSSProperties}
@@ -300,19 +301,12 @@ const ImageDropzone = React.memo(
           onMouseLeave={() => setIsHovered(false)}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          style={{
-            width: '100%',
-            height: 'auto',
-            position: 'relative',
-            aspectRatio: `${width} / ${height}`,
-            overflow: 'hidden',
-            touchAction: 'none',
-          }}
+          style={{ aspectRatio: `${width} / ${height}` }}
         >
           {displaySrc && (
             <img
               onMouseDown={readOnly ? undefined : handleMouseDown}
-              onLoad={onImageLoad}
+              onLoad={handleImageLoad}
               src={displaySrc}
               ref={imageRef}
               alt="Preview"
@@ -368,5 +362,7 @@ const ImageDropzone = React.memo(
     );
   },
 );
+
+ImageDropzone.displayName = 'ImageDropzone';
 
 export default ImageDropzone;
