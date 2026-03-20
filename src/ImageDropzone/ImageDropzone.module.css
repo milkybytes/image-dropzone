@@ -80,7 +80,7 @@
   }
 
   > svg[data-disabled='false']:hover {
-    fill: var(--idz-accent, #7c83d4);
+    --idz-icon-color: var(--idz-accent, #7c83d4);
     cursor: pointer;
   }
 }
