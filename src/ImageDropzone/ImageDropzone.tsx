@@ -1,14 +1,33 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
 import { buildDropzoneThemeVars, ImageDropzoneTheme } from '../theme';
-import ChevronDownIcon from '../icons/ChevronDownIcon';
-import ChevronLeftIcon from '../icons/ChevronLeftIcon';
-import ChevronRightIcon from '../icons/ChevronRightIcon';
-import ChevronUpIcon from '../icons/ChevronUpIcon';
 import DeleteIcon from '../icons/DeleteIcon';
-import DownloadIcon from '../icons/DownloadIcon';
-import ImageUploadIcon from '../icons/ImageUploadIcon';
+import UploadIcon from '../icons/UploadIcon';
 import styles from './ImageDropzone.module.css';
+
+export interface ActionContext {
+  /** Whether an image is currently loaded */
+  hasImage: boolean;
+  /** Opens the native file picker */
+  openFilePicker: () => void;
+  /** Removes the current image */
+  removeImage: () => void;
+  /** Exports the currently-visible cropped area as a PNG data URL */
+  exportCrop: () => string | undefined;
+}
+
+/**
+ * Imperative handle exposed via ref. Use this to call exportCrop, openFilePicker,
+ * or removeImage from outside the component (e.g. a "Download All" button).
+ */
+export interface ImageDropzoneHandle {
+  /** Returns a PNG data URL of the currently-visible cropped area, or undefined if no image is loaded */
+  exportCrop: () => string | undefined;
+  /** Programmatically opens the native file picker */
+  openFilePicker: () => void;
+  /** Programmatically removes the current image */
+  removeImage: () => void;
+}
 
 export interface ImageDropzoneProps {
   /** Placeholder label shown when no image is loaded */
@@ -27,25 +46,12 @@ export interface ImageDropzoneProps {
   /** Called with a base64 data URL when an image is uploaded, or null when deleted */
   onImageUpload?: (image: string | null) => void;
   /**
-   * Called when the user clicks the download icon.
-   * When `captureVisible` is true, receives the data URL of only the visible area.
-   * Otherwise receives `undefined` — use the original `imageSrc` for a full download.
+   * Render prop for the action toolbar. Receives an ActionContext with helpers
+   * (openFilePicker, removeImage, exportCrop, hasImage) so you can compose
+   * any layout of icons you need. Defaults to an upload + delete icon when omitted.
    */
-  onImageDownload?: (visibleDataUrl?: string) => void;
-  /**
-   * When true, the download action captures only the currently-visible cropped area
-   * and passes its PNG data URL to `onImageDownload`.
-   */
-  captureVisible?: boolean;
-  /** If provided, shows a left-arrow action button */
-  onMoveLeft?: (() => void) | null;
-  /** If provided, shows a right-arrow action button */
-  onMoveRight?: (() => void) | null;
-  /** If provided, shows an up-arrow action button */
-  onMoveUp?: (() => void) | null;
-  /** If provided, shows a down-arrow action button */
-  onMoveDown?: (() => void) | null;
-  /** When true, hides upload/delete/move controls and disables drag */
+  actions?: (ctx: ActionContext) => React.ReactNode;
+  /** When true, hides the action toolbar and disables drag/drop */
   readOnly?: boolean;
   /**
    * Theme token overrides. Any CSS `--idz-*` variable can still be set globally
@@ -60,31 +66,29 @@ export interface ImageDropzoneProps {
 }
 
 const ImageDropzone = React.memo(
-  ({
-    label,
-    width,
-    height,
-    imageSrc,
-    onImageTransform = () => {},
-    onImageUpload,
-    onImageDownload,
-    captureVisible = false,
-    onMoveLeft = null,
-    onMoveRight = null,
-    onMoveUp = null,
-    onMoveDown = null,
-    readOnly = false,
-    theme,
-    className,
-    style,
-  }: ImageDropzoneProps) => {
+  React.forwardRef<ImageDropzoneHandle, ImageDropzoneProps>((
+    {
+      label,
+      width,
+      height,
+      imageSrc,
+      onImageTransform = () => {},
+      onImageUpload = () => {},
+      actions,
+      readOnly = false,
+      theme,
+      className,
+      style,
+    },
+    ref,
+  ) => {
     const [scale, setScale] = useState<number>(1);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const imageRef = useRef<HTMLImageElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [cursorStyle, setCursorStyle] = useState('grab');
-    const dragStart = useRef({ x: 0, y: 0 });
-    const dragRef = useRef(false);
+    const dragOriginRef = useRef({ x: 0, y: 0 });
+    const isDraggingRef = useRef(false);
     const [isHovered, setIsHovered] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const [imageLoading, setImageLoading] = useState(!!imageSrc);
@@ -135,7 +139,7 @@ const ImageDropzone = React.memo(
       }
     }, [imageSrc, displaySrc]);
 
-    const onImageLoad = () => {
+    const handleImageLoad = () => {
       setImageLoading(false);
       if (imageRef.current) {
         setImageNaturalSize({
@@ -167,21 +171,21 @@ const ImageDropzone = React.memo(
     const handleMouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
       event.preventDefault();
       setCursorStyle('grabbing');
-      dragRef.current = true;
-      dragStart.current = {
+      isDraggingRef.current = true;
+      dragOriginRef.current = {
         x: event.clientX - position.x,
         y: event.clientY - position.y,
       };
     };
 
     const handleDragMove = (event: MouseEvent) => {
-      if (!dragRef.current) return;
+      if (!isDraggingRef.current) return;
       event.preventDefault();
-      updatePosition(event.clientX - dragStart.current.x, event.clientY - dragStart.current.y);
+      updatePosition(event.clientX - dragOriginRef.current.x, event.clientY - dragOriginRef.current.y);
     };
 
     const handleDragStop = () => {
-      dragRef.current = false;
+      isDraggingRef.current = false;
       setCursorStyle('grab');
     };
 
@@ -194,7 +198,7 @@ const ImageDropzone = React.memo(
         window.removeEventListener('mouseup', handleDragStop);
         window.removeEventListener('mouseleave', handleDragStop);
       };
-    }, [scale]);
+    }, []);
 
     // Stable wheel handler — reads latest scale/position from ref so pan-then-zoom works correctly
     useEffect(() => {
@@ -241,15 +245,16 @@ const ImageDropzone = React.memo(
     }, [readOnly]);
 
     const updatePosition = (newX: number, newY: number) => {
-      if (!imageRef.current || !containerSize.width || !containerSize.height) return;
-      const imgWidth = imageRef.current.naturalWidth * scale;
-      const imgHeight = imageRef.current.naturalHeight * scale;
+      const { scale: s, containerSize: cs } = latestRef.current;
+      if (!imageRef.current || !cs.width || !cs.height) return;
+      const imgWidth = imageRef.current.naturalWidth * s;
+      const imgHeight = imageRef.current.naturalHeight * s;
       updateTransform(
         {
-          x: Math.min(0, Math.max(newX, containerSize.width - imgWidth)),
-          y: Math.min(0, Math.max(newY, containerSize.height - imgHeight)),
+          x: Math.min(0, Math.max(newX, cs.width - imgWidth)),
+          y: Math.min(0, Math.max(newY, cs.height - imgHeight)),
         },
-        scale,
+        s,
       );
     };
 
@@ -279,32 +284,34 @@ const ImageDropzone = React.memo(
       }
     };
 
-    const handleDownload = () => {
-      if (!onImageDownload) return;
-      if (captureVisible && imageRef.current && containerSize.width && containerSize.height) {
-        const canvas = document.createElement('canvas');
-        canvas.width = containerSize.width;
-        canvas.height = containerSize.height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { onImageDownload(); return; }
-        ctx.drawImage(
-          imageRef.current,
-          position.x,
-          position.y,
-          imageRef.current.naturalWidth * scale,
-          imageRef.current.naturalHeight * scale,
-        );
-        onImageDownload(canvas.toDataURL('image/png'));
-      } else {
-        onImageDownload();
-      }
+    const captureVisibleArea = (): string | undefined => {
+      if (!imageRef.current || !containerSize.width || !containerSize.height) return undefined;
+      const canvas = document.createElement('canvas');
+      canvas.width = containerSize.width;
+      canvas.height = containerSize.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return undefined;
+      ctx.drawImage(
+        imageRef.current,
+        position.x,
+        position.y,
+        imageRef.current.naturalWidth * scale,
+        imageRef.current.naturalHeight * scale,
+      );
+      return canvas.toDataURL('image/png');
     };
+
+    useImperativeHandle(ref, () => ({
+      exportCrop: captureVisibleArea,
+      openFilePicker: () => inputRef.current?.click(),
+      removeImage: () => onImageUpload?.(null),
+    }));
 
     return (
       <div
         className={`${styles.dropzoneSizer}${className ? ` ${className}` : ''}`}
         style={{
-          '--dropzone-width': `${width}px`,
+          '--idz-width': `${width}px`,
           ...(theme ? buildDropzoneThemeVars(theme) : {}),
           ...style,
         } as React.CSSProperties}
@@ -316,19 +323,12 @@ const ImageDropzone = React.memo(
           onMouseLeave={() => setIsHovered(false)}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          style={{
-            width: '100%',
-            height: 'auto',
-            position: 'relative',
-            aspectRatio: `${width} / ${height}`,
-            overflow: 'hidden',
-            touchAction: 'none',
-          }}
+          style={{ aspectRatio: `${width} / ${height}` }}
         >
           {displaySrc && (
             <img
               onMouseDown={readOnly ? undefined : handleMouseDown}
-              onLoad={onImageLoad}
+              onLoad={handleImageLoad}
               src={displaySrc}
               ref={imageRef}
               alt="Preview"
@@ -355,13 +355,20 @@ const ImageDropzone = React.memo(
           {!readOnly && (
             <>
               <div className={`${styles.actions} ${isHovered ? styles['fade-in'] : ''}`}>
-                <ImageUploadIcon onClick={() => inputRef.current?.click()} />
-                {onMoveLeft && <ChevronLeftIcon disabled={!displaySrc} onClick={onMoveLeft} />}
-                {onMoveUp && <ChevronUpIcon disabled={!displaySrc} onClick={onMoveUp} />}
-                {onMoveRight && <ChevronRightIcon disabled={!displaySrc} onClick={onMoveRight} />}
-                {onMoveDown && <ChevronDownIcon disabled={!displaySrc} onClick={onMoveDown} />}
-                {onImageDownload && <DownloadIcon onClick={handleDownload} />}
-                <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
+                {actions
+                  ? actions({
+                      hasImage: !!displaySrc,
+                      openFilePicker: () => inputRef.current?.click(),
+                      removeImage: () => onImageUpload?.(null),
+                      exportCrop: captureVisibleArea,
+                    })
+                  : (
+                      <>
+                        <UploadIcon onClick={() => inputRef.current?.click()} />
+                        <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
+                      </>
+                    )
+                }
               </div>
               <input
                 type="file"
@@ -375,7 +382,7 @@ const ImageDropzone = React.memo(
         </div>
       </div>
     );
-  },
+  }),
 );
 
 ImageDropzone.displayName = 'ImageDropzone';

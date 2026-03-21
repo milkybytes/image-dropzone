@@ -1,13 +1,25 @@
-import React from 'react';
+import React, { useImperativeHandle, useRef } from 'react';
 
 import { buildCarouselThemeVars, ImageCarouselTheme } from '../theme';
-import ImageDropzone from '../ImageDropzone/ImageDropzone';
+import ImageDropzone, { type ActionContext, type ImageDropzoneHandle } from '../ImageDropzone/ImageDropzone';
 import ChevronLeftIcon from '../icons/ChevronLeftIcon';
 import ChevronRightIcon from '../icons/ChevronRightIcon';
+import DeleteIcon from '../icons/DeleteIcon';
+import DownloadIcon from '../icons/DownloadIcon';
+import UploadIcon from '../icons/UploadIcon';
 import styles from './ImageCarousel.module.css';
 
 export interface CarouselSlot {
   label: string;
+}
+
+/**
+ * Imperative handle exposed via ref. Use this to call exportCrop for the
+ * currently-visible slot from outside the component.
+ */
+export interface ImageCarouselHandle {
+  /** Returns a PNG data URL of the currently-visible slot, or undefined */
+  exportCrop: () => string | undefined;
 }
 
 export interface ImageCarouselProps {
@@ -24,9 +36,9 @@ export interface ImageCarouselProps {
   /** Called when the user uploads or clears an image in a slot */
   onImageUpload: (slotIndex: number, image: string | null) => void;
   /** Called when the user clicks download on a slot */
-  onImageDownload: (slotIndex: number) => void;
+  onImageDownload?: (slotIndex: number) => void;
   /** Called when the user pans/zooms an image in a slot */
-  onImageTransform: (slotIndex: number, position: { x: number; y: number }, scale: number) => void;
+  onImageTransform?: (slotIndex: number, position: { x: number; y: number }, scale: number) => void;
   /** Called when the user navigates to a different slot */
   onIndexChange: (newIndex: number) => void;
   /**
@@ -34,6 +46,11 @@ export interface ImageCarouselProps {
    * so the user can reorder images between adjacent slots.
    */
   onCarouselImageMove?: (fromIndex: number, toIndex: number) => void;
+  /**
+   * Render prop for the action toolbar of each slot. Receives standard ActionContext
+   * plus the current `slotIndex`. Overrides the default upload/move/download/delete toolbar.
+   */
+  actions?: (ctx: ActionContext & { slotIndex: number }) => React.ReactNode;
   /**
    * Theme token overrides. Covers both the inner dropzone and the carousel
    * nav buttons/dots. Supports multiple themes without any global CSS.
@@ -45,21 +62,27 @@ export interface ImageCarouselProps {
   style?: React.CSSProperties;
 }
 
-const ImageCarousel = ({
-  width,
-  height,
-  slots,
-  images,
-  currentIndex,
-  onImageUpload,
-  onImageDownload,
-  onImageTransform,
-  onIndexChange,
-  onCarouselImageMove,
-  theme,
-  className,
-  style,
-}: ImageCarouselProps) => {
+const ImageCarousel = React.memo(
+  React.forwardRef<ImageCarouselHandle, ImageCarouselProps>((
+    {
+      width,
+      height,
+      slots,
+      images,
+      currentIndex,
+      onImageUpload,
+      onImageDownload,
+      onImageTransform = () => {},
+      onIndexChange,
+      onCarouselImageMove,
+      actions,
+      theme,
+      className,
+      style,
+    },
+    ref,
+  ) => {
+
   const handlePrevious = () => {
     onIndexChange(currentIndex === 0 ? slots.length - 1 : currentIndex - 1);
   };
@@ -75,6 +98,12 @@ const ImageCarousel = ({
     images[currentIndex + 1]
   );
 
+  const dropzoneRef = useRef<ImageDropzoneHandle>(null);
+
+  useImperativeHandle(ref, () => ({
+    exportCrop: () => dropzoneRef.current?.exportCrop(),
+  }));
+
   return (
     <div
       className={`${styles.carouselContainer}${className ? ` ${className}` : ''}`}
@@ -82,15 +111,29 @@ const ImageCarousel = ({
     >
       <div className={styles.carouselWrapper}>
         <ImageDropzone
+          ref={dropzoneRef}
           label={slots[currentIndex].label}
           width={width}
           height={height}
           imageSrc={images[currentIndex] ?? undefined}
           onImageUpload={(image) => onImageUpload(currentIndex, image)}
-          onImageDownload={() => onImageDownload(currentIndex)}
           onImageTransform={(position, scale) => onImageTransform(currentIndex, position, scale)}
-          onMoveLeft={canMoveLeft && onCarouselImageMove ? () => onCarouselImageMove(currentIndex, currentIndex - 1) : null}
-          onMoveRight={canMoveRight && onCarouselImageMove ? () => onCarouselImageMove(currentIndex, currentIndex + 1) : null}
+          actions={actions
+            ? (ctx) => actions({ ...ctx, slotIndex: currentIndex })
+            : (ctx) => (
+                <>
+                  <UploadIcon onClick={ctx.openFilePicker} />
+                  {onCarouselImageMove && canMoveLeft && (
+                    <ChevronLeftIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex - 1)} />
+                  )}
+                  {onCarouselImageMove && canMoveRight && (
+                    <ChevronRightIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex + 1)} />
+                  )}
+                  {onImageDownload && <DownloadIcon onClick={() => onImageDownload(currentIndex)} />}
+                  <DeleteIcon disabled={!ctx.hasImage} onClick={ctx.removeImage} />
+                </>
+              )
+          }
         />
 
         <div className={styles.carouselControls}>
@@ -117,6 +160,9 @@ const ImageCarousel = ({
       </div>
     </div>
   );
-};
+  }),
+);
+
+ImageCarousel.displayName = 'ImageCarousel';
 
 export default ImageCarousel;

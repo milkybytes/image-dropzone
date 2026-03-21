@@ -12,7 +12,7 @@
  */
 
 .dropzoneSizer {
-  width: var(--dropzone-width);
+  width: var(--idz-width);
   max-width: 100%;
   container-type: inline-size;
 
@@ -23,11 +23,15 @@
 
 .dropzone {
   position: relative;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  touch-action: none;
   background-color: var(--idz-bg, #1e1e2e);
   border: var(--idz-border, none);
   border-radius: var(--idz-radius, 8px);
   transition: border-color 0.3s ease-in-out;
-  z-index: 10;
+  z-index: 1;
   user-select: none;
   overflow: clip;
 
@@ -80,7 +84,7 @@
   }
 
   > svg[data-disabled='false']:hover {
-    fill: var(--idz-accent, #7c83d4);
+    --idz-icon-color: var(--idz-accent, #7c83d4);
     cursor: pointer;
   }
 }
