@@ -20,11 +20,11 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6 # https://github.com/actions/checkout
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6 # https://github.com/actions/setup-node
         with:
           node-version: 20
           cache: yarn
@@ -44,13 +44,13 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6 # https://github.com/actions/checkout
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6 # https://github.com/actions/setup-node
         with:
-          node-version: 20
+          node-version: 24
           cache: yarn
 
       - name: Install dependencies
@@ -61,7 +61,7 @@ jobs:
         run: yarn build
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4 # https://github.com/actions/upload-pages-artifact
         with:
           path: demo/dist
 
@@ -76,4 +76,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v4 # https://github.com/actions/deploy-pages
