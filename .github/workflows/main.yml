@@ -56,6 +56,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
+      - name: Install demo dependencies
+        working-directory: demo
+        run: yarn install --frozen-lockfile
+
       - name: Build demo
         working-directory: demo
         run: yarn build
