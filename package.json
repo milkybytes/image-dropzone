@@ -1,7 +1,6 @@
 {
   "name": "@milkybytes/image-dropzone",
   "version": "0.1.0",
-  "private": true,
   "description": "Reusable React image dropzone and carousel components with CSS variable theming",
   "main": "./dist/index.umd.js",
   "module": "./dist/index.es.js",
