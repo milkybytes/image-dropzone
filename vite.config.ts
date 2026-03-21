@@ -26,4 +26,9 @@ export default defineConfig({
     },
     cssCodeSplit: false,
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.ts'],
+  },
 });
