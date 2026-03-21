@@ -2,6 +2,10 @@
   "name": "@milkybytes/image-dropzone",
   "version": "0.0.1",
   "description": "Reusable React image dropzone and carousel components with CSS variable theming",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/milkybytes/image-dropzone"
+  },
   "main": "./dist/index.umd.js",
   "module": "./dist/index.es.js",
   "exports": {
