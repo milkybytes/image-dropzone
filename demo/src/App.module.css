@@ -93,13 +93,6 @@
   font-size: 0.9em;
 }
 
-.subheading {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-top: 2rem;
-  margin-bottom: 0.5rem;
-}
-
 /* ── Example block: preview + code ─────────────────────────────── */
 .example {
   display: flex;
@@ -160,59 +153,6 @@
 .refButtons button:disabled {
   opacity: 0.35;
   cursor: default;
-}
-
-/* ── Theme switcher ────────────────────────────────────────────── */
-.themeButtons {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.25rem;
-}
-
-.themeBtn {
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: inherit;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.15s;
-}
-
-.themeBtn:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.themeBtnActive {
-  border-color: #7c83d4;
-  background: rgba(124, 131, 212, 0.2);
-  color: #a0a8e8;
-}
-
-/* ── Gallery: Row Strip ────────────────────────────────────────── */
-.galleryStrip {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-/* ── Gallery: Hero + Details ───────────────────────────────────── */
-.galleryHero {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-.galleryHeroRight {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 0;
-  max-width: 100%;
 }
 
 /* ── Slot status chips ─────────────────────────────────────────── */
