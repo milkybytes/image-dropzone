@@ -1,0 +1,79 @@
+name: CI & Deploy Demo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Drop all permissions by default — each job opts in to only what it needs.
+permissions: {}
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6 # https://github.com/actions/checkout
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6 # https://github.com/actions/setup-node
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Typecheck
+        run: yarn typecheck
+
+      - name: Run tests
+        run: yarn test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6 # https://github.com/actions/checkout
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v6 # https://github.com/actions/setup-node
+        with:
+          node-version: 24
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build demo
+        working-directory: demo
+        run: yarn build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4 # https://github.com/actions/upload-pages-artifact
+        with:
+          path: demo/dist
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment: github-pages
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # https://github.com/actions/deploy-pages
