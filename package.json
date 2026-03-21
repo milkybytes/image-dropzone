@@ -13,24 +13,41 @@
     "./dist/style.css": "./dist/style.css"
   },
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
-  "sideEffects": ["**/*.css"],
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "workspaces": [
+    "demo"
+  ],
   "scripts": {
     "build": "vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "yarn workspace @milkybytes/image-dropzone-demo dev",
+    "build:demo": "yarn workspace @milkybytes/image-dropzone-demo build"
   },
   "peerDependencies": {
     "react": ">=17",
     "react-dom": ">=17"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^4",
+    "jsdom": "^29.0.1",
     "react": "^18",
     "react-dom": "^18",
     "typescript": "^5",
     "vite": "^5",
-    "vite-plugin-dts": "^3"
+    "vite-plugin-dts": "^3",
+    "vitest": "^4.1.0"
   }
 }
