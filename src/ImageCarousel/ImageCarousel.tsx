@@ -1,16 +1,25 @@
-import React from 'react';
+import React, { useImperativeHandle, useRef } from 'react';
 
 import { buildCarouselThemeVars, ImageCarouselTheme } from '../theme';
-import ImageDropzone, { type ActionContext } from '../ImageDropzone/ImageDropzone';
+import ImageDropzone, { type ActionContext, type ImageDropzoneHandle } from '../ImageDropzone/ImageDropzone';
 import ChevronLeftIcon from '../icons/ChevronLeftIcon';
 import ChevronRightIcon from '../icons/ChevronRightIcon';
 import DeleteIcon from '../icons/DeleteIcon';
 import DownloadIcon from '../icons/DownloadIcon';
-import ImageUploadIcon from '../icons/ImageUploadIcon';
+import UploadIcon from '../icons/UploadIcon';
 import styles from './ImageCarousel.module.css';
 
 export interface CarouselSlot {
   label: string;
+}
+
+/**
+ * Imperative handle exposed via ref. Use this to call exportCrop for the
+ * currently-visible slot from outside the component.
+ */
+export interface ImageCarouselHandle {
+  /** Returns a PNG data URL of the currently-visible slot, or undefined */
+  exportCrop: () => string | undefined;
 }
 
 export interface ImageCarouselProps {
@@ -53,22 +62,26 @@ export interface ImageCarouselProps {
   style?: React.CSSProperties;
 }
 
-const ImageCarousel = React.memo(({
-  width,
-  height,
-  slots,
-  images,
-  currentIndex,
-  onImageUpload,
-  onImageDownload,
-  onImageTransform = () => {},
-  onIndexChange,
-  onCarouselImageMove,
-  actions,
-  theme,
-  className,
-  style,
-}: ImageCarouselProps) => {
+const ImageCarousel = React.memo(
+  React.forwardRef<ImageCarouselHandle, ImageCarouselProps>((
+    {
+      width,
+      height,
+      slots,
+      images,
+      currentIndex,
+      onImageUpload,
+      onImageDownload,
+      onImageTransform = () => {},
+      onIndexChange,
+      onCarouselImageMove,
+      actions,
+      theme,
+      className,
+      style,
+    },
+    ref,
+  ) => {
 
   const handlePrevious = () => {
     onIndexChange(currentIndex === 0 ? slots.length - 1 : currentIndex - 1);
@@ -85,6 +98,12 @@ const ImageCarousel = React.memo(({
     images[currentIndex + 1]
   );
 
+  const dropzoneRef = useRef<ImageDropzoneHandle>(null);
+
+  useImperativeHandle(ref, () => ({
+    exportCrop: () => dropzoneRef.current?.exportCrop(),
+  }));
+
   return (
     <div
       className={`${styles.carouselContainer}${className ? ` ${className}` : ''}`}
@@ -92,6 +111,7 @@ const ImageCarousel = React.memo(({
     >
       <div className={styles.carouselWrapper}>
         <ImageDropzone
+          ref={dropzoneRef}
           label={slots[currentIndex].label}
           width={width}
           height={height}
@@ -102,7 +122,7 @@ const ImageCarousel = React.memo(({
             ? (ctx) => actions({ ...ctx, slotIndex: currentIndex })
             : (ctx) => (
                 <>
-                  <ImageUploadIcon onClick={ctx.openFilePicker} />
+                  <UploadIcon onClick={ctx.openFilePicker} />
                   {onCarouselImageMove && canMoveLeft && (
                     <ChevronLeftIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex - 1)} />
                   )}
@@ -140,7 +160,8 @@ const ImageCarousel = React.memo(({
       </div>
     </div>
   );
-});
+  }),
+);
 
 ImageCarousel.displayName = 'ImageCarousel';
 

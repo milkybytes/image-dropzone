@@ -1,8 +1,8 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
 import { buildDropzoneThemeVars, ImageDropzoneTheme } from '../theme';
 import DeleteIcon from '../icons/DeleteIcon';
-import ImageUploadIcon from '../icons/ImageUploadIcon';
+import UploadIcon from '../icons/UploadIcon';
 import styles from './ImageDropzone.module.css';
 
 export interface ActionContext {
@@ -14,6 +14,19 @@ export interface ActionContext {
   removeImage: () => void;
   /** Exports the currently-visible cropped area as a PNG data URL */
   exportCrop: () => string | undefined;
+}
+
+/**
+ * Imperative handle exposed via ref. Use this to call exportCrop, openFilePicker,
+ * or removeImage from outside the component (e.g. a "Download All" button).
+ */
+export interface ImageDropzoneHandle {
+  /** Returns a PNG data URL of the currently-visible cropped area, or undefined if no image is loaded */
+  exportCrop: () => string | undefined;
+  /** Programmatically opens the native file picker */
+  openFilePicker: () => void;
+  /** Programmatically removes the current image */
+  removeImage: () => void;
 }
 
 export interface ImageDropzoneProps {
@@ -53,19 +66,22 @@ export interface ImageDropzoneProps {
 }
 
 const ImageDropzone = React.memo(
-  ({
-    label,
-    width,
-    height,
-    imageSrc,
-    onImageTransform = () => {},
-    onImageUpload = () => {},
-    actions,
-    readOnly = false,
-    theme,
-    className,
-    style,
-  }: ImageDropzoneProps) => {
+  React.forwardRef<ImageDropzoneHandle, ImageDropzoneProps>((
+    {
+      label,
+      width,
+      height,
+      imageSrc,
+      onImageTransform = () => {},
+      onImageUpload = () => {},
+      actions,
+      readOnly = false,
+      theme,
+      className,
+      style,
+    },
+    ref,
+  ) => {
     const [scale, setScale] = useState<number>(1);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const imageRef = useRef<HTMLImageElement>(null);
@@ -285,6 +301,12 @@ const ImageDropzone = React.memo(
       return canvas.toDataURL('image/png');
     };
 
+    useImperativeHandle(ref, () => ({
+      exportCrop: captureVisibleArea,
+      openFilePicker: () => inputRef.current?.click(),
+      removeImage: () => onImageUpload?.(null),
+    }));
+
     return (
       <div
         className={`${styles.dropzoneSizer}${className ? ` ${className}` : ''}`}
@@ -342,7 +364,7 @@ const ImageDropzone = React.memo(
                     })
                   : (
                       <>
-                        <ImageUploadIcon onClick={() => inputRef.current?.click()} />
+                        <UploadIcon onClick={() => inputRef.current?.click()} />
                         <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
                       </>
                     )
@@ -360,7 +382,7 @@ const ImageDropzone = React.memo(
         </div>
       </div>
     );
-  },
+  }),
 );
 
 ImageDropzone.displayName = 'ImageDropzone';
