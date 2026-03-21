@@ -1,6 +1,6 @@
 {
   "name": "@milkybytes/image-dropzone",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Reusable React image dropzone and carousel components with CSS variable theming",
   "main": "./dist/index.umd.js",
   "module": "./dist/index.es.js",
@@ -18,16 +18,13 @@
   "sideEffects": [
     "**/*.css"
   ],
-  "workspaces": [
-    "demo"
-  ],
   "scripts": {
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "demo": "yarn workspace @milkybytes/image-dropzone-demo dev",
-    "build:demo": "yarn workspace @milkybytes/image-dropzone-demo build"
+    "demo": "cd demo && yarn dev",
+    "build:demo": "cd demo && yarn build"
   },
   "peerDependencies": {
     "react": ">=17",
