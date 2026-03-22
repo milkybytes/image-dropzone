@@ -27,8 +27,8 @@ export default function RefExample() {
             imageSrc={image}
             onImageUpload={(img) => setImage(img ?? undefined)}
           />
-          <div className={styles.refButtons}>
-            <button onClick={() => ref.current?.openFilePicker()}>
+          <div className={styles.demoButtons}>
+            <button onClick={() => ref.current?.openFilePicker()} className={styles.demoButton}>
               Open picker
             </button>
             <button
@@ -42,10 +42,11 @@ export default function RefExample() {
                 a.download = 'cropped.png';
                 a.click();
               }}
+              className={styles.demoButton}
             >
               Download crop
             </button>
-            <button disabled={!image} onClick={() => ref.current?.removeImage()}>
+            <button disabled={!image} onClick={() => ref.current?.removeImage()} className={styles.demoButton}>
               Remove
             </button>
           </div>
