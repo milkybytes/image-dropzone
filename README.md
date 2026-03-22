@@ -18,7 +18,7 @@ yarn add @milkybytes/image-dropzone
 pnpm add @milkybytes/image-dropzone
 ```
 
-Import the stylesheet:
+Import the stylesheet once in your app's entry file (e.g. `main.tsx`):
 
 ```ts
 import '@milkybytes/image-dropzone/style.css';
