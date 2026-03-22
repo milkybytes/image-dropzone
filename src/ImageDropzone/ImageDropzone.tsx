@@ -4,6 +4,7 @@ import { buildDropzoneThemeVars, ImageDropzoneTheme } from '../theme';
 import DeleteIcon from '../icons/DeleteIcon';
 import UploadIcon from '../icons/UploadIcon';
 import styles from './ImageDropzone.module.css';
+import DownloadIcon from '../icons/DownloadIcon';
 
 export interface ActionContext {
   /** Whether an image is currently loaded */
@@ -89,8 +90,8 @@ const ImageDropzone = React.memo(
       width,
       height,
       imageSrc,
-      onImageTransform = () => {},
-      onImageUpload = () => {},
+      onImageTransform = () => { },
+      onImageUpload = () => { },
       actions,
       actionsPosition = 'top',
       readOnly = false,
@@ -375,17 +376,29 @@ const ImageDropzone = React.memo(
               <div className={`${styles.actions} ${POSITION_CLASSES[actionsPosition]} ${isHovered ? styles['fade-in'] : ''}`}>
                 {actions
                   ? actions({
-                      hasImage: !!displaySrc,
-                      openFilePicker: () => inputRef.current?.click(),
-                      removeImage: () => onImageUpload?.(null),
-                      exportCrop: captureVisibleArea,
-                    })
+                    hasImage: !!displaySrc,
+                    openFilePicker: () => inputRef.current?.click(),
+                    removeImage: () => onImageUpload?.(null),
+                    exportCrop: captureVisibleArea,
+                  })
                   : (
-                      <>
-                        <UploadIcon onClick={() => inputRef.current?.click()} />
-                        <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
-                      </>
-                    )
+                    <>
+                      <UploadIcon onClick={() => inputRef.current?.click()} />
+                      <DownloadIcon onClick={() => {
+                        const dataUrl = captureVisibleArea();
+                        const href = dataUrl ?? displaySrc;
+                        if (!href) return;
+                        const a = document.createElement('a');
+                        a.href = href;
+                        a.download = 'cropped.png';
+                        a.click();
+                      }
+                      }
+                        disabled={!displaySrc}
+                      />
+                      <DeleteIcon disabled={!displaySrc} onClick={() => onImageUpload?.(null)} />
+                    </>
+                  )
                 }
               </div>
               <input
