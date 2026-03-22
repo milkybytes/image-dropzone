@@ -6,18 +6,22 @@
 
 A React component library for drag-and-drop image upload with pan, zoom, and multi-slot carousels. Fully themeable via CSS custom properties — no Tailwind or other framework required.
 
-**[Live Demo →](https://milkybytes.github.io/image-dropzone/)**
+**[Live Demo + Reference Examples →](https://milkybytes.github.io/image-dropzone/)**
 
 ## Installation
 
 ```bash
 npm install @milkybytes/image-dropzone
+# or
+yarn add @milkybytes/image-dropzone
+# or
+pnpm add @milkybytes/image-dropzone
 ```
 
-Import the stylesheet:
+Import the stylesheet once in your app's entry file (e.g. `main.tsx`):
 
 ```ts
-import '@milkybytes/image-dropzone/dist/style.css';
+import '@milkybytes/image-dropzone/style.css';
 ```
 
 ## Usage
@@ -30,8 +34,8 @@ function App() {
 
   return (
     <ImageDropzone
-      width={300}
-      height={400}
+      width={350}
+      height={570}
       imageSrc={image}
       onImageUpload={(src) => setImage(src ?? undefined)}
     />
