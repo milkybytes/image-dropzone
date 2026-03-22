@@ -132,7 +132,7 @@ describe('ImageDropzone', () => {
             const { container } = render(<ImageDropzone width={350} height={570} />);
             const toolbar = container.querySelector('[class*="actions"]')!;
             const svgs = toolbar.querySelectorAll('svg');
-            expect(svgs.length).toBe(2); // upload + delete
+            expect(svgs.length).toBe(3); // upload + download + delete
         });
 
         it('renders custom actions via render prop', () => {
