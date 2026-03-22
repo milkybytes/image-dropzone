@@ -12,12 +12,16 @@ A React component library for drag-and-drop image upload with pan, zoom, and mul
 
 ```bash
 npm install @milkybytes/image-dropzone
+# or
+yarn add @milkybytes/image-dropzone
+# or
+pnpm add @milkybytes/image-dropzone
 ```
 
 Import the stylesheet:
 
 ```ts
-import '@milkybytes/image-dropzone/dist/style.css';
+import '@milkybytes/image-dropzone/style.css';
 ```
 
 ## Usage

@@ -3,8 +3,6 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
-  // Set base to './' for GitHub Pages subdirectory deployment.
-  // Change to '/<repo-name>/' if your pages site lives at a sub-path.
   base: './',
   resolve: {
     alias: {
