@@ -2,19 +2,32 @@
   "name": "@milkybytes/image-dropzone",
   "version": "0.1.3",
   "description": "Reusable React image dropzone and carousel components with CSS variable theming",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "image",
+    "dropzone",
+    "upload",
+    "drag-and-drop",
+    "carousel",
+    "crop",
+    "pan",
+    "zoom",
+    "css-variables",
+    "theming"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/milkybytes/image-dropzone"
   },
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.es.js",
   "module": "./dist/index.es.js",
   "exports": {
     ".": {
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js"
     },
-    "./style.css": "./dist/style.css",
-    "./dist/style.css": "./dist/style.css"
+    "./style.css": "./dist/style.css"
   },
   "types": "./dist/index.d.ts",
   "files": [

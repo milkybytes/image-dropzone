@@ -12,17 +12,11 @@ export default defineConfig({
     lib: {
       entry: resolve('src/index.ts'),
       name: 'ReactImageDropzone',
-      formats: ['es', 'umd'],
-      fileName: (format) => `index.${format}.js`,
+      formats: ['es'],
+      fileName: () => 'index.es.js',
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-        },
-      },
+      external: ['react', 'react-dom', 'react/jsx-runtime'],
     },
     cssCodeSplit: false,
   },
