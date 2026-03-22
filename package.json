@@ -20,13 +20,12 @@
     "type": "git",
     "url": "https://github.com/milkybytes/image-dropzone"
   },
-  "main": "./dist/index.umd.js",
+  "main": "./dist/index.es.js",
   "module": "./dist/index.es.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.es.js",
-      "require": "./dist/index.umd.js"
+      "import": "./dist/index.es.js"
     },
     "./style.css": "./dist/style.css"
   },
