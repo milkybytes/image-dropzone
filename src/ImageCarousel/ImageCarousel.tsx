@@ -129,7 +129,7 @@ const ImageCarousel = React.memo(
                   {onCarouselImageMove && canMoveRight && (
                     <ChevronRightIcon onClick={() => onCarouselImageMove(currentIndex, currentIndex + 1)} />
                   )}
-                  {onImageDownload && <DownloadIcon onClick={() => onImageDownload(currentIndex)} />}
+                  {onImageDownload && ctx.hasImage && <DownloadIcon onClick={() => onImageDownload(currentIndex)} />}
                   <DeleteIcon disabled={!ctx.hasImage} onClick={ctx.removeImage} />
                 </>
               )
