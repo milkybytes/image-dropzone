@@ -16,6 +16,10 @@ export interface ActionContext {
   exportCrop: () => string | undefined;
 }
 
+export type ActionsPosition =
+  | 'top' | 'bottom' | 'left' | 'right'
+  | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
 /**
  * Imperative handle exposed via ref. Use this to call exportCrop, openFilePicker,
  * or removeImage from outside the component (e.g. a "Download All" button).
@@ -51,6 +55,8 @@ export interface ImageDropzoneProps {
    * any layout of icons you need. Defaults to an upload + delete icon when omitted.
    */
   actions?: (ctx: ActionContext) => React.ReactNode;
+  /** Where the action toolbar is anchored. Defaults to 'top'. */
+  actionsPosition?: ActionsPosition;
   /** When true, hides the action toolbar and disables drag/drop */
   readOnly?: boolean;
   /**
@@ -65,6 +71,17 @@ export interface ImageDropzoneProps {
   style?: React.CSSProperties;
 }
 
+const POSITION_CLASSES: Record<ActionsPosition, string> = {
+  'top':          `${styles.actionsTop} ${styles.actionsHorizontal}`,
+  'bottom':       `${styles.actionsBottom} ${styles.actionsHorizontal}`,
+  'left':         `${styles.actionsLeft} ${styles.actionsVertical}`,
+  'right':        `${styles.actionsRight} ${styles.actionsVertical}`,
+  'top-left':     `${styles.actionsTopLeft} ${styles.actionsHorizontal}`,
+  'top-right':    `${styles.actionsTopRight} ${styles.actionsHorizontal}`,
+  'bottom-left':  `${styles.actionsBottomLeft} ${styles.actionsHorizontal}`,
+  'bottom-right': `${styles.actionsBottomRight} ${styles.actionsHorizontal}`,
+};
+
 const ImageDropzone = React.memo(
   React.forwardRef<ImageDropzoneHandle, ImageDropzoneProps>((
     {
@@ -75,6 +92,7 @@ const ImageDropzone = React.memo(
       onImageTransform = () => {},
       onImageUpload = () => {},
       actions,
+      actionsPosition = 'top',
       readOnly = false,
       theme,
       className,
@@ -354,7 +372,7 @@ const ImageDropzone = React.memo(
           )}
           {!readOnly && (
             <>
-              <div className={`${styles.actions} ${isHovered ? styles['fade-in'] : ''}`}>
+              <div className={`${styles.actions} ${POSITION_CLASSES[actionsPosition]} ${isHovered ? styles['fade-in'] : ''}`}>
                 {actions
                   ? actions({
                       hasImage: !!displaySrc,
