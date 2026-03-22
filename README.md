@@ -6,7 +6,7 @@
 
 A React component library for drag-and-drop image upload with pan, zoom, and multi-slot carousels. Fully themeable via CSS custom properties — no Tailwind or other framework required.
 
-**[Live Demo →](https://milkybytes.github.io/image-dropzone/)**
+**[Live Demo + Reference Examples →](https://milkybytes.github.io/image-dropzone/)**
 
 ## Installation
 
