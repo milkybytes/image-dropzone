@@ -34,8 +34,8 @@ function App() {
 
   return (
     <ImageDropzone
-      width={300}
-      height={400}
+      width={350}
+      height={570}
       imageSrc={image}
       onImageUpload={(src) => setImage(src ?? undefined)}
     />

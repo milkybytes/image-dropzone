@@ -37,8 +37,8 @@ export default function ActionsPositionExample() {
         <div className={styles.preview}>
           <ImageDropzone
             label="Hover to see toolbar"
-            width={300}
-            height={400}
+            width={350}
+            height={570}
             imageSrc={image}
             actionsPosition={position}
             onImageUpload={(src) => setImage(src ?? undefined)}
@@ -46,8 +46,8 @@ export default function ActionsPositionExample() {
         </div>
         <Code>{`<ImageDropzone
   actionsPosition="${position}"
-  width={300}
-  height={400}
+  width={350}
+  height={570}
   imageSrc={image}
   onImageUpload={setImage}
 />`}</Code>
