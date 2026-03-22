@@ -67,6 +67,24 @@
   line-height: 1.6;
 }
 
+.links {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.links a {
+  display: flex;
+  opacity: 0.9;
+  transition: opacity 0.15s;
+}
+
+.links a:hover {
+  opacity: 1;
+}
+
 /* ── Sections ──────────────────────────────────────────────────── */
 .section {
   margin-bottom: 4rem;
@@ -121,38 +139,46 @@
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
 
   /* Allow pre to scroll horizontally without pushing the container wider */
-  > pre {
+  >pre {
     overflow-x: auto;
   }
 }
 
-/* ── Ref buttons ───────────────────────────────────────────────── */
-.refButtons {
+/* ── Demo buttons ───────────────────────────────────────────────── */
+.demoButtons {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
   flex-wrap: wrap;
 }
 
-.refButtons button {
+.demoButton {
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+
   padding: 0.4rem 0.9rem;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.06);
-  color: inherit;
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.refButtons button:hover:not(:disabled) {
+.demoButton:hover:not(:disabled) {
   border-color: rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.12);
 }
 
-.refButtons button:disabled {
+.demoButton:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+.demoButtonActive {
+  border-color: rgba(124, 131, 212, 0.5);
+  background: rgba(124, 131, 212, 0.12);
+  color: #a0a8e8;
 }
 
 /* ── Slot status chips ─────────────────────────────────────────── */
